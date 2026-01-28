@@ -1,0 +1,12 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+terraform.tfvars
+*.auto.tfvars
+patched-task-definition.json
+
+# Keep lock file for reproducible builds
+!.terraform.lock.hcl

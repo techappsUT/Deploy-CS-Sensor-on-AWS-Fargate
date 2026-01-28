@@ -1,0 +1,46 @@
+# =============================================================================
+# CrowdStrike Falcon Sensor - Terraform Variables Example
+# =============================================================================
+
+falcon_client_id     = ""
+falcon_client_secret = ""
+falcon_cid           = ""
+falcon_cloud         = "us-1"
+eks_cluster_name     = ""
+deployment_type      = "eks"
+
+# Production recommendation: pin to an explicit image version instead of "latest"
+# falcon_sensor_image_tag = "7.10.0-1234"
+
+# Production recommendation: use IMMUTABLE tags (now the default) to prevent
+# tag overwriting. Set to "MUTABLE" only if your workflow requires re-tagging.
+# ecr_image_tag_mutability = "IMMUTABLE"
+
+# Platform architecture for sensor image pull: "x86_64" or "aarch64"
+# See: https://falcon.crowdstrike.com/documentation/page/a5c297cc/deploy-falcon-container-sensor-for-linux-on-ecs-fargate#r242f9bb
+# platform_architecture = "x86_64"
+
+# CrowdStrike sensor pull script URL
+# falcon_pull_script_url = "https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh"
+
+# Default tags applied to all resources
+# default_tags = {
+#   "ManagedBy"   = "Terraform"
+#   "Application" = "CrowdStrike-Falcon"
+# }
+
+# Override CrowdStrike API endpoint map (add custom regions)
+# falcon_api_endpoints = {
+#   "us-1"     = "api.crowdstrike.com"
+#   "us-2"     = "api.us-2.crowdstrike.com"
+#   "eu-1"     = "api.eu-1.crowdstrike.com"
+#   "us-gov-1" = "api.laggar.gcw.crowdstrike.com"
+# }
+
+# Override CrowdStrike registry endpoint map
+# falcon_registry_endpoints = {
+#   "us-1"     = "registry.crowdstrike.com"
+#   "us-2"     = "registry.crowdstrike.com"
+#   "eu-1"     = "registry.crowdstrike.com"
+#   "us-gov-1" = "registry.laggar.gcw.crowdstrike.com"
+# }
