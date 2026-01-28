@@ -29,20 +29,20 @@ output "sensor_image" {
 
 output "kac_release_name" {
   description = "Helm release name for Falcon KAC"
-  value       = helm_release.falcon_kac.name
+  value       = var.enable_kac ? helm_release.falcon_kac[0].name : null
 }
 
 output "kac_release_status" {
   description = "Helm release status for Falcon KAC"
-  value       = helm_release.falcon_kac.status
+  value       = var.enable_kac ? helm_release.falcon_kac[0].status : null
 }
 
 output "iar_release_name" {
   description = "Helm release name for Falcon Image Analyzer"
-  value       = helm_release.falcon_image_analyzer.name
+  value       = var.enable_iar ? helm_release.falcon_image_analyzer[0].name : null
 }
 
 output "iar_release_status" {
   description = "Helm release status for Falcon Image Analyzer"
-  value       = helm_release.falcon_image_analyzer.status
+  value       = var.enable_iar ? helm_release.falcon_image_analyzer[0].status : null
 }

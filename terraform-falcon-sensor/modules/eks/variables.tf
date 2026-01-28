@@ -13,7 +13,7 @@ variable "falcon_cid" {
 }
 
 variable "falcon_cloud" {
-  description = "CrowdStrike cloud region (us-1, us-2, eu-1, us-gov-1)"
+  description = "CrowdStrike cloud region (us-1, us-2, eu-1, us-gov-1, us-gov-2)"
   type        = string
   default     = "us-1"
 
@@ -112,6 +112,18 @@ variable "release_name" {
   default     = "falcon-sensor"
 }
 
+variable "enable_kac" {
+  description = "Enable deployment of Falcon Kubernetes Admission Controller (KAC)"
+  type        = bool
+  default     = true
+}
+
+variable "enable_iar" {
+  description = "Enable deployment of Falcon Image Analyzer (IAR)"
+  type        = bool
+  default     = true
+}
+
 variable "kac_release_name" {
   description = "Helm release name for Falcon KAC"
   type        = string
@@ -164,6 +176,21 @@ variable "additional_helm_values" {
   description = "Additional Helm values to merge with defaults"
   type        = any
   default     = {}
+}
+
+#-------------------------------------------------------------------------------
+# Platform Architecture
+#-------------------------------------------------------------------------------
+
+variable "platform_architecture" {
+  description = "Platform architecture for the Falcon sensor image (x86_64 or aarch64). When aarch64, nodeAffinity rules are automatically added to schedule pods on ARM64 nodes."
+  type        = string
+  default     = "x86_64"
+
+  validation {
+    condition     = contains(["x86_64", "aarch64"], var.platform_architecture)
+    error_message = "Platform architecture must be either 'x86_64' or 'aarch64'."
+  }
 }
 
 #-------------------------------------------------------------------------------

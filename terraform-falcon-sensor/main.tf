@@ -169,6 +169,7 @@ module "eks" {
   # Sensor Image Configuration
   sensor_image_repository = var.create_ecr_repository ? aws_ecr_repository.falcon_sensor[0].repository_url : local.ecr_repository_url
   sensor_image_tag        = var.falcon_sensor_image_tag
+  platform_architecture   = var.platform_architecture
 
   # Namespace Configuration
   namespace        = var.helm_namespace

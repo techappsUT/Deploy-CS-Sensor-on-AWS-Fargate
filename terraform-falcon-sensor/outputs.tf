@@ -14,7 +14,7 @@ output "ecr_repository_arn" {
 
 output "falcon_sensor_image" {
   description = "Full Falcon sensor image URI"
-  value       = "${var.create_ecr_repository ? aws_ecr_repository.falcon_sensor[0].repository_url : "${local.aws_account_id}.dkr.ecr.${local.aws_region}.amazonaws.com/${var.ecr_repository_name}"}:${var.falcon_sensor_image_tag}"
+  value       = "${var.create_ecr_repository ? aws_ecr_repository.falcon_sensor[0].repository_url : local.ecr_repository_url}:${var.falcon_sensor_image_tag}"
 }
 
 output "aws_account_id" {

@@ -66,18 +66,35 @@ locals {
         pullPolicy = var.image_pull_policy
       }
 
-      daemonset = {
-        tolerations = [
-          {
-            operator = "Exists"
-            effect   = "NoSchedule"
-          },
-          {
-            operator = "Exists"
-            effect   = "NoExecute"
+      daemonset = merge(
+        {
+          tolerations = [
+            {
+              operator = "Exists"
+              effect   = "NoSchedule"
+            },
+            {
+              operator = "Exists"
+              effect   = "NoExecute"
+            }
+          ]
+        },
+        var.platform_architecture == "aarch64" ? {
+          affinity = {
+            nodeAffinity = {
+              requiredDuringSchedulingIgnoredDuringExecution = {
+                nodeSelectorTerms = [{
+                  matchExpressions = [{
+                    key      = "kubernetes.io/arch"
+                    operator = "In"
+                    values   = ["arm64"]
+                  }]
+                }]
+              }
+            }
           }
-        ]
-      }
+        } : {}
+      )
 
       resources = var.node_sensor_resources
     }
@@ -113,7 +130,7 @@ resource "kubernetes_namespace_v1" "falcon_system" {
 }
 
 resource "kubernetes_namespace_v1" "falcon_kac" {
-  count = var.create_namespace ? 1 : 0
+  count = var.create_namespace && var.enable_kac ? 1 : 0
 
   metadata {
     name = var.kac_namespace
@@ -130,7 +147,7 @@ resource "kubernetes_namespace_v1" "falcon_kac" {
 }
 
 resource "kubernetes_namespace_v1" "falcon_iar" {
-  count = var.create_namespace ? 1 : 0
+  count = var.create_namespace && var.enable_iar ? 1 : 0
 
   metadata {
     name = var.iar_namespace
@@ -148,6 +165,14 @@ resource "kubernetes_namespace_v1" "falcon_iar" {
 
 #===============================================================================
 # ECR Pull Secret (for private ECR repository)
+#
+# IMPORTANT: ECR authorization tokens expire after 12 hours. This secret will
+# become stale and pods scheduled after expiry will fail to pull images.
+# For production, use one of these approaches:
+#   1. Use an ECR credential helper (e.g., ecr-credential-provider) on nodes
+#   2. Use a CronJob or external-secrets-operator to refresh the token
+#   3. Set create_ecr_pull_secret=false and configure node-level ECR auth
+# The CrowdStrike registry pull token does NOT expire, but ECR tokens do.
 #===============================================================================
 
 resource "kubernetes_secret_v1" "ecr_pull_secret" {
@@ -156,6 +181,11 @@ resource "kubernetes_secret_v1" "ecr_pull_secret" {
   metadata {
     name      = "falcon-ecr-pull-secret"
     namespace = var.create_namespace ? kubernetes_namespace_v1.falcon_system[0].metadata[0].name : var.namespace
+
+    annotations = {
+      "falcon-deploy/warning"    = "ECR token expires after 12 hours. Use a credential refresh mechanism for production."
+      "falcon-deploy/created-at" = timestamp()
+    }
   }
 
   type = "kubernetes.io/dockerconfigjson"
@@ -170,7 +200,21 @@ resource "kubernetes_secret_v1" "ecr_pull_secret" {
     })
   }
 
+  lifecycle {
+    # Force recreation on every apply to refresh the ECR token
+    replace_triggered_by = [null_resource.ecr_token_refresh_trigger]
+  }
+
   depends_on = [kubernetes_namespace_v1.falcon_system]
+}
+
+# This resource triggers secret replacement on every apply to refresh the ECR token
+resource "null_resource" "ecr_token_refresh_trigger" {
+  count = var.create_ecr_pull_secret ? 1 : 0
+
+  triggers = {
+    always_refresh = timestamp()
+  }
 }
 
 data "aws_ecr_authorization_token" "token" {}
@@ -209,6 +253,7 @@ resource "helm_release" "falcon_sensor" {
 #===============================================================================
 
 resource "helm_release" "falcon_kac" {
+  count            = var.enable_kac ? 1 : 0
   name             = var.kac_release_name
   repository       = var.helm_repository_url
   chart            = "falcon-kac"
@@ -240,6 +285,7 @@ resource "helm_release" "falcon_kac" {
 #===============================================================================
 
 resource "helm_release" "falcon_image_analyzer" {
+  count            = var.enable_iar ? 1 : 0
   name             = var.iar_release_name
   repository       = var.helm_repository_url
   chart            = "falcon-image-analyzer"
