@@ -6,8 +6,19 @@ falcon_client_id     = ""
 falcon_client_secret = ""
 falcon_cid           = ""
 falcon_cloud         = "us-1"
-eks_cluster_name     = ""
 deployment_type      = "eks"
+aws_region           = "us-east-1"
+
+# ---- EKS Configuration ----
+eks_cluster_name           = ""
+eks_cluster_endpoint       = ""
+eks_cluster_ca_certificate = ""
+
+# ---- ECS Fargate Configuration (uncomment when using deployment_type = "ecs" or "both") ----
+# ecs_cluster_name                  = ""
+# ecs_service_name                  = ""
+# ecs_task_definition_file          = ""
+# ecs_patched_task_definition_output = "patched-task-definition.json"
 
 # Production recommendation: pin to an explicit image version instead of "latest"
 # falcon_sensor_image_tag = "7.10.0-1234"
