@@ -118,10 +118,12 @@ resource "null_resource" "pull_and_push_falcon_image" {
 
       # Pull using CrowdStrike script
       # See: https://falcon.crowdstrike.com/documentation/page/a5c297cc/deploy-falcon-container-sensor-for-linux-on-ecs-fargate
-      LATEST_SENSOR=$(bash <(curl -sL "$PULL_SCRIPT_URL") \
+      PULL_OUTPUT=$(bash <(curl -sL "$PULL_SCRIPT_URL") \
         -t $SENSOR_TYPE \
         --platform $PLATFORM \
-        2>&1 | tail -1)
+        2>&1) || { echo "Pull script failed:"; echo "$PULL_OUTPUT"; exit 1; }
+      echo "$PULL_OUTPUT"
+      LATEST_SENSOR=$(echo "$PULL_OUTPUT" | tail -1)
 
       echo "Pulled image: $LATEST_SENSOR"
 
