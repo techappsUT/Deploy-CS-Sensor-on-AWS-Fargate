@@ -114,27 +114,25 @@ resource "null_resource" "pull_and_push_falcon_image" {
     command = <<-EOT
       set -euo pipefail
 
-      timeout 600 bash -c '
-        echo "Pulling Falcon sensor image..."
+      echo "Pulling Falcon sensor image..."
 
-        # Pull using CrowdStrike script
-        # See: https://falcon.crowdstrike.com/documentation/page/a5c297cc/deploy-falcon-container-sensor-for-linux-on-ecs-fargate
-        LATEST_SENSOR=$(bash <(curl -sL "$PULL_SCRIPT_URL") \
-          -t $SENSOR_TYPE \
-          --platform $PLATFORM \
-          2>&1 | tail -1)
+      # Pull using CrowdStrike script
+      # See: https://falcon.crowdstrike.com/documentation/page/a5c297cc/deploy-falcon-container-sensor-for-linux-on-ecs-fargate
+      LATEST_SENSOR=$(bash <(curl -sL "$PULL_SCRIPT_URL") \
+        -t $SENSOR_TYPE \
+        --platform $PLATFORM \
+        2>&1 | tail -1)
 
-        echo "Pulled image: $LATEST_SENSOR"
+      echo "Pulled image: $LATEST_SENSOR"
 
-        # Login to ECR
-        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+      # Login to ECR
+      aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
 
-        # Tag and push
-        docker tag "$LATEST_SENSOR" "$ECR_REPO:$IMAGE_TAG"
-        docker push "$ECR_REPO:$IMAGE_TAG"
+      # Tag and push
+      docker tag "$LATEST_SENSOR" "$ECR_REPO:$IMAGE_TAG"
+      docker push "$ECR_REPO:$IMAGE_TAG"
 
-        echo "Pushed to: $ECR_REPO:$IMAGE_TAG"
-      '
+      echo "Pushed to: $ECR_REPO:$IMAGE_TAG"
     EOT
   }
 
